@@ -1,8 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { login as loginApi, logout as logoutApi } from '../api/auth';
+import { login as loginAPI, logout as logoutAPI } from '../api/auth';
 import { getProfile } from '../api/profile';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -13,54 +13,77 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const login = async (credentials) => {
-    try {
-      const data = await loginApi(credentials);
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('token', data.token);
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await logoutApi();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem('token');
-    }
-  };
-
-  const checkAuth = async () => {
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      try {
-        const userData = await getProfile();
-        setUser(userData);
-        setToken(savedToken);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('token');
-        setToken(null);
-        setUser(null);
-      }
-    }
-    setLoading(false);
-  };
-
+  /**
+   * Check authentication status on mount
+   */
   useEffect(() => {
     checkAuth();
   }, []);
+
+  /**
+   * Check if user is authenticated
+   */
+  const checkAuth = async () => {
+    try {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
+        setToken(storedToken);
+        const profileData = await getProfile();
+        setUser(profileData);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Login user
+   * @param {Object} credentials - Login credentials
+   * @param {string} credentials.username - Username
+   * @param {string} credentials.password - Password
+   */
+  const login = async (credentials) => {
+    try {
+      const response = await loginAPI(credentials);
+      const { token: authToken, user: userData } = response;
+      
+      localStorage.setItem('token', authToken);
+      setToken(authToken);
+      setUser(userData);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Login failed:', error);
+      return { 
+        success: false, 
+        error: error.response?.data || { error: 'Login failed' }
+      };
+    }
+  };
+
+  /**
+   * Logout user
+   */
+  const logout = async () => {
+    try {
+      await logoutAPI();
+    } catch (error) {
+      console.error('Logout API failed:', error);
+    } finally {
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+    }
+  };
 
   const value = {
     token,
@@ -69,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     checkAuth,
+    isAuthenticated: !!token,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

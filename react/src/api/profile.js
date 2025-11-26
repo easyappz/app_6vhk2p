@@ -1,5 +1,9 @@
 import instance from './axios';
 
+/**
+ * Get current user profile
+ * @returns {Promise} Response with user profile data
+ */
 export const getProfile = async () => {
   const token = localStorage.getItem('token');
   const response = await instance.get('/api/profile/', {
@@ -10,9 +14,16 @@ export const getProfile = async () => {
   return response.data;
 };
 
-export const updateProfile = async (profileData) => {
+/**
+ * Update user profile
+ * @param {Object} data - Profile update data
+ * @param {string} data.username - New username
+ * @param {string} data.email - New email
+ * @returns {Promise} Response with updated profile data
+ */
+export const updateProfile = async (data) => {
   const token = localStorage.getItem('token');
-  const response = await instance.put('/api/profile/update/', profileData, {
+  const response = await instance.put('/api/profile/update/', data, {
     headers: {
       Authorization: `Token ${token}`,
     },
