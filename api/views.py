@@ -13,9 +13,11 @@ from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     MemberSerializer,
-    ProfileUpdateSerializer
+    ProfileUpdateSerializer,
+    ChatMessageSerializer,
+    ChatMessageCreateSerializer
 )
-from .models import Member, AuthToken
+from .models import Member, AuthToken, Message
 
 
 class TokenAuthentication(BaseAuthentication):
@@ -184,4 +186,65 @@ class ProfileView(APIView):
             member = serializer.update(request.user, serializer.validated_data)
             member_serializer = MemberSerializer(member)
             return Response(member_serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MessagesListView(APIView):
+    """
+    Get list of all chat messages.
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={200: dict}
+    )
+    def get(self, request):
+        # Get query parameters
+        limit = int(request.query_params.get('limit', 100))
+        offset = int(request.query_params.get('offset', 0))
+
+        # Get total count
+        total_count = Message.objects.count()
+
+        # Get messages with pagination, ordered by created_at descending
+        messages = Message.objects.select_related('member').order_by('-created_at')[offset:offset + limit]
+        
+        # Serialize messages
+        serializer = ChatMessageSerializer(messages, many=True)
+        
+        return Response(
+            {
+                'count': total_count,
+                'results': serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class MessageCreateView(APIView):
+    """
+    Create a new chat message.
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=ChatMessageCreateSerializer,
+        responses={201: ChatMessageSerializer}
+    )
+    def post(self, request):
+        serializer = ChatMessageCreateSerializer(
+            data=request.data,
+            context={'request': request}
+        )
+        
+        if serializer.is_valid():
+            message = serializer.save()
+            response_serializer = ChatMessageSerializer(message)
+            return Response(
+                response_serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

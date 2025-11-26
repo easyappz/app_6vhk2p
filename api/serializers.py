@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member, AuthToken
+from .models import Member, AuthToken, Message
 
 
 class MessageSerializer(serializers.Serializer):
@@ -94,3 +94,49 @@ class ProfileUpdateSerializer(serializers.Serializer):
         instance.email = validated_data.get('email', instance.email)
         instance.save()
         return instance
+
+
+class ChatMessageAuthorSerializer(serializers.ModelSerializer):
+    """
+    Serializer for message author information.
+    """
+    class Meta:
+        model = Member
+        fields = ['id', 'username']
+        read_only_fields = ['id', 'username']
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    """
+    Serializer for displaying chat messages.
+    """
+    author = ChatMessageAuthorSerializer(source='member', read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ['id', 'text', 'author', 'created_at']
+        read_only_fields = ['id', 'author', 'created_at']
+
+
+class ChatMessageCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating chat messages.
+    """
+    class Meta:
+        model = Message
+        fields = ['text']
+
+    def validate_text(self, value):
+        if not value or len(value.strip()) == 0:
+            raise serializers.ValidationError("Message text cannot be empty")
+        if len(value) > 5000:
+            raise serializers.ValidationError("Message text is too long (max 5000 characters)")
+        return value
+
+    def create(self, validated_data):
+        member = self.context['request'].user
+        message = Message.objects.create(
+            member=member,
+            text=validated_data['text']
+        )
+        return message
