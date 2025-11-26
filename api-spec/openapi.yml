@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: Group Chat API
+  description: API for group chat application with authentication and messaging
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Development server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+      description: Token-based authentication. Use format 'Token <your-token>'
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+
+    ValidationError:
+      type: object
+      properties:
+        field_name:
+          type: array
+          items:
+            type: string
+          description: List of validation errors for specific field
+
+paths:
+  /api/auth/register/:
+    $ref: './paths/auth-register.yml'
+  /api/auth/login/:
+    $ref: './paths/auth-login.yml'
+  /api/auth/logout/:
+    $ref: './paths/auth-logout.yml'
+  /api/profile/:
+    $ref: './paths/profile-get.yml'
+  /api/profile/update/:
+    $ref: './paths/profile-update.yml'
+  /api/messages/:
+    $ref: './paths/messages-list.yml'
+  /api/messages/create/:
+    $ref: './paths/messages-create.yml'

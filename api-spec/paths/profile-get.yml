@@ -1,0 +1,40 @@
+get:
+  summary: Get current user profile
+  description: Retrieve profile information of the authenticated user
+  operationId: getProfile
+  tags:
+    - Profile
+  x-isSecure: true
+  security:
+    - BearerAuth: []
+  responses:
+    '200':
+      description: User profile data
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              username:
+                type: string
+                example: john_doe
+              email:
+                type: string
+                example: john@example.com
+              created_at:
+                type: string
+                format: date-time
+                example: 2024-01-15T10:30:00Z
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided

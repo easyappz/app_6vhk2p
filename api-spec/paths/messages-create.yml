@@ -1,0 +1,73 @@
+post:
+  summary: Send message
+  description: Send a new message to the chat
+  operationId: createMessage
+  tags:
+    - Messages
+  x-isSecure: true
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - text
+          properties:
+            text:
+              type: string
+              minLength: 1
+              maxLength: 5000
+              description: Message text
+              example: Hello everyone!
+  responses:
+    '201':
+      description: Message successfully created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              text:
+                type: string
+                example: Hello everyone!
+              author:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  username:
+                    type: string
+                    example: john_doe
+              created_at:
+                type: string
+                format: date-time
+                example: 2024-01-15T10:30:00Z
+    '400':
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              text:
+                type: array
+                items:
+                  type: string
+                example: ["This field is required"]
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided

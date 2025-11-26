@@ -1,0 +1,72 @@
+get:
+  summary: Get chat messages
+  description: Retrieve list of all messages in the chat, ordered by creation time
+  operationId: getMessages
+  tags:
+    - Messages
+  x-isSecure: true
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: limit
+      in: query
+      description: Number of messages to return
+      required: false
+      schema:
+        type: integer
+        default: 100
+        example: 50
+    - name: offset
+      in: query
+      description: Number of messages to skip
+      required: false
+      schema:
+        type: integer
+        default: 0
+        example: 0
+  responses:
+    '200':
+      description: List of messages
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+                description: Total number of messages
+                example: 150
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    text:
+                      type: string
+                      example: Hello everyone!
+                    author:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: john_doe
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: 2024-01-15T10:30:00Z
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided
