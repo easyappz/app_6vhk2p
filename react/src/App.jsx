@@ -5,7 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Register from './components/Register';
 import Login from './components/Login';
-import Chat from './pages/Chat';
+import Chat from './components/Chat';
 import Profile from './pages/Profile';
 import './App.css';
 
