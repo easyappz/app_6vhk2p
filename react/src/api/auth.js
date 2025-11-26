@@ -37,7 +37,7 @@ export const logout = async () => {
     {},
     {
       headers: {
-        Authorization: `Token ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     }
   );

@@ -8,7 +8,7 @@ export const getProfile = async () => {
   const token = localStorage.getItem('token');
   const response = await instance.get('/api/profile/', {
     headers: {
-      Authorization: `Token ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   return response.data;
@@ -25,7 +25,7 @@ export const updateProfile = async (data) => {
   const token = localStorage.getItem('token');
   const response = await instance.put('/api/profile/update/', data, {
     headers: {
-      Authorization: `Token ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   return response.data;

@@ -12,7 +12,7 @@ export const getMessages = async (params = { limit: 100, offset: 0 }) => {
   const response = await instance.get('/api/messages/', {
     params,
     headers: {
-      Authorization: `Token ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   return response.data;
@@ -28,7 +28,7 @@ export const sendMessage = async (data) => {
   const token = localStorage.getItem('token');
   const response = await instance.post('/api/messages/create/', data, {
     headers: {
-      Authorization: `Token ${token}`,
+      Authorization: `Bearer ${token}`,
     },
   });
   return response.data;
